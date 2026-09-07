@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from routers import analytics, chat, services
+from routers import analytics, chat, pss_cloud_api, services
 from services.embedding_service import _get_model
 
 # Explicit setup, not left to uvicorn's defaults - guarantees logger.info()
@@ -97,6 +97,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 app.include_router(chat.router, tags=["chat"])
 app.include_router(analytics.router, tags=["analytics"])
 app.include_router(services.router, tags=["services"])
+app.include_router(pss_cloud_api.router, tags=["pss_cloud"])
 
 
 @app.get("/health", tags=["system"])
