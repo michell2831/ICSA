@@ -66,13 +66,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: read allowed origins from env (comma-separated), default to local dev only
-_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+# CORS: allow all Vercel domains, local dev, and custom ALLOWED_ORIGINS
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,https://planning-and-standard.vercel.app")
 ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+if "https://planning-and-standard.vercel.app" not in ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS.append("https://planning-and-standard.vercel.app")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
