@@ -158,10 +158,22 @@ def _load_data() -> dict:
 
 def _save_data(data: dict) -> None:
     try:
+        data["version"] = data.get("version", 1) + 1
+        data["last_updated"] = datetime.utcnow().isoformat() + "Z"
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
     except Exception as e:
         print(f"[PSS Store] Failed to save data: {e}")
+
+
+@router.get("/sync/version")
+@router.get("/api/sync/version")
+def get_sync_version():
+    data = _load_data()
+    return {
+        "version": data.get("version", 1),
+        "last_updated": data.get("last_updated", "")
+    }
 
 
 # --- SERVICE MODES ENDPOINTS ---
