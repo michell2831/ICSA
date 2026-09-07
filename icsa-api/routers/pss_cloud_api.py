@@ -382,8 +382,14 @@ def create_kpi(payload: Dict[str, Any] = Body(...)):
     data = _load_data()
     new_kpi = {
         "id": f"kpi-{uuid.uuid4().hex[:8]}",
-        **payload,
-        "is_active": True,
+        "name": payload.get("name") or payload.get("title") or "",
+        "title": payload.get("title") or payload.get("name") or "",
+        "category": payload.get("category", "EFFICIENCY"),
+        "target_value": payload.get("target_value", 100),
+        "unit": payload.get("unit", "%"),
+        "service_id": payload.get("service_id"),
+        "office": payload.get("office", "Academic Office"),
+        "is_active": payload.get("is_active", True),
     }
     data["kpis"].insert(0, new_kpi)
     _save_data(data)
@@ -397,6 +403,10 @@ def update_kpi(kpi_id: str, payload: Dict[str, Any] = Body(...)):
     for k in data["kpis"]:
         if k["id"] == kpi_id:
             k.update(payload)
+            if "name" in payload and "title" not in payload:
+                k["title"] = payload["name"]
+            elif "title" in payload and "name" not in payload:
+                k["name"] = payload["title"]
             _save_data(data)
             return k
     raise HTTPException(status_code=404, detail="KPI not found")
@@ -418,7 +428,12 @@ def get_holidays(year: Optional[str] = Query(None), type: Optional[str] = Query(
     data = _load_data()
     holidays = data.get("holidays", [])
     if year:
-        holidays = [h for h in holidays if h.get("date", "").startswith(year)]
+        holidays = [
+            h for h in holidays
+            if str(h.get("year", "")) == str(year)
+            or str(h.get("date", "")).startswith(str(year))
+            or h.get("is_recurring", False)
+        ]
     if type:
         holidays = [h for h in holidays if h.get("type", "").lower() == type.lower()]
     return {"data": holidays, "total": len(holidays)}
@@ -428,9 +443,29 @@ def get_holidays(year: Optional[str] = Query(None), type: Optional[str] = Query(
 @router.post("/api/holidays")
 def create_holiday(payload: Dict[str, Any] = Body(...)):
     data = _load_data()
+    curr_year = datetime.utcnow().year
+    year = payload.get("year", curr_year)
+    month = payload.get("month")
+    day = payload.get("day")
+    date_str = payload.get("holiday_date") or payload.get("date")
+
+    if not date_str and month and day:
+        date_str = f"{year}-{int(month):02d}-{int(day):02d}"
+    elif date_str and (not month or not day):
+        parts = date_str.split("T")[0].split("-")
+        if len(parts) == 3:
+            year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
+
     new_hol = {
         "id": f"hol-{uuid.uuid4().hex[:8]}",
-        **payload,
+        "name": payload.get("name", "").strip(),
+        "date": date_str or f"{curr_year}-01-01",
+        "holiday_date": date_str or f"{curr_year}-01-01",
+        "year": year,
+        "month": month,
+        "day": day,
+        "type": payload.get("type", "REGULAR"),
+        "is_recurring": payload.get("is_recurring", False),
     }
     data["holidays"].insert(0, new_hol)
     _save_data(data)
@@ -444,6 +479,8 @@ def update_holiday(hol_id: str, payload: Dict[str, Any] = Body(...)):
     for h in data["holidays"]:
         if h["id"] == hol_id:
             h.update(payload)
+            if "date" in payload and "holiday_date" not in payload:
+                h["holiday_date"] = payload["date"]
             _save_data(data)
             return h
     raise HTTPException(status_code=404, detail="Holiday not found")
@@ -470,10 +507,15 @@ def get_periods():
 @router.post("/api/periods")
 def create_period(payload: Dict[str, Any] = Body(...)):
     data = _load_data()
+    p_type = payload.get("period_type") or payload.get("type") or "Semester"
     new_per = {
         "id": f"per-{uuid.uuid4().hex[:8]}",
-        **payload,
-        "status": "Open",
+        "name": payload.get("name", "").strip(),
+        "type": p_type,
+        "period_type": p_type,
+        "start_date": payload.get("start_date", ""),
+        "end_date": payload.get("end_date", ""),
+        "status": payload.get("status", "Open"),
         "is_active": True,
     }
     data["periods"].insert(0, new_per)
