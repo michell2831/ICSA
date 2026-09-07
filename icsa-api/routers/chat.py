@@ -42,9 +42,15 @@ def chat(body: ChatRequest):
             status_code=400,
             content={"error": "Query cannot be empty", "code": 400},
         )
-    except Exception:  
-        traceback.print_exc() 
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Internal server error. Please try again.", "code": 500},
+    except Exception as e:
+        traceback.print_exc()
+        return ChatResponse(
+            answer=(
+                "I'm here to assist with official PUP Caloocan campus services. "
+                "Please ask your question again or visit the concerned campus office."
+            ),
+            session_id=session_id,
+            response_time_ms=int((time.time() - start) * 1000),
+            confidence=0.5,
+            escalated=True,
         )

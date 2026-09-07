@@ -42,35 +42,54 @@ HISTORY_TURNS_FOR_REWRITE = 5
 
 
 def _search(query: str, top_k: int = 3):
-    if config.USE_MOCK_VECTOR_STORE:
-        from services.mock_vector_store import search_similar
-    else:
-        from services.vector_store import search_similar
-    return search_similar(query, top_k=top_k)
+    try:
+        if config.USE_MOCK_VECTOR_STORE:
+            from services.mock_vector_store import search_similar
+        else:
+            from services.vector_store import search_similar
+        return search_similar(query, top_k=top_k)
+    except Exception as e:
+        logger.warning(f"[rag] Vector store retrieval error: {e}, falling back to mock vector store")
+        from services.mock_vector_store import search_similar as fallback_search
+        return fallback_search(query, top_k=top_k)
 
 
 def _generate(query: str, context):
-    if config.USE_MOCK_LLM:
-        from services.mock_llm_service import generate_answer
-    else:
-        from services.llm_service import generate_answer
-    return generate_answer(query, context)
+    try:
+        if config.USE_MOCK_LLM:
+            from services.mock_llm_service import generate_answer
+        else:
+            from services.llm_service import generate_answer
+        return generate_answer(query, context)
+    except Exception as e:
+        logger.warning(f"[rag] LLM generation error: {e}, falling back to mock generator")
+        from services.mock_llm_service import generate_answer as fallback_generate
+        return fallback_generate(query, context)
 
 
 def _rewrite_and_classify(query: str, history: List[dict]) -> dict:
-    if config.USE_MOCK_LLM:
-        from services.mock_llm_service import rewrite_and_classify
-    else:
-        from services.llm_service import rewrite_and_classify
-    return rewrite_and_classify(query, history)
+    try:
+        if config.USE_MOCK_LLM:
+            from services.mock_llm_service import rewrite_and_classify
+        else:
+            from services.llm_service import rewrite_and_classify
+        return rewrite_and_classify(query, history)
+    except Exception as e:
+        logger.warning(f"[rag] rewrite_and_classify error: {e}")
+        return {"standalone_query": query, "intent": "service_question"}
 
 
 def _generate_off_topic_response(query: str) -> str:
-    if config.USE_MOCK_LLM:
-        from services.mock_llm_service import generate_off_topic_response
-    else:
-        from services.llm_service import generate_off_topic_response
-    return generate_off_topic_response(query)
+    try:
+        if config.USE_MOCK_LLM:
+            from services.mock_llm_service import generate_off_topic_response
+        else:
+            from services.llm_service import generate_off_topic_response
+        return generate_off_topic_response(query)
+    except Exception as e:
+        logger.warning(f"[rag] off_topic generation error: {e}")
+        from services.mock_llm_service import generate_off_topic_response as fallback_off_topic
+        return fallback_off_topic(query)
 
 
 def _count_answer() -> ChatResponse:
@@ -302,6 +321,17 @@ class RAGOrchestrator:
             return self._finalize(
                 ChatResponse(answer=TIMEOUT_MESSAGE, escalated=True),
                 session_id, query, start,
+            )
+        except Exception as e:
+            logger.exception(f"[rag] process_query unexpected error: {e}")
+            return self._finalize(
+                ChatResponse(
+                    answer=NO_CONTEXT_MESSAGE,
+                    escalated=True,
+                ),
+                session_id,
+                query,
+                start,
             )
 
     def _finalize(

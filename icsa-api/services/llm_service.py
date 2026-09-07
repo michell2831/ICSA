@@ -26,8 +26,14 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        from groq import Groq
-        _client = Groq(api_key=config.get_groq_api_key())
+        try:
+            from groq import Groq
+            api_key = config.get_groq_api_key()
+            _client = Groq(api_key=api_key)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"[llm_service] Could not initialize Groq client: {e}")
+            return None
     return _client
 
 
@@ -35,56 +41,62 @@ def generate_off_topic_response(query: str) -> str:
     """Generate a friendly, dynamic refusal/redirect for off-topic/casual queries via Groq."""
     try:
         client = _get_client()
-        resp = client.chat.completions.create(
-            model=config.GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": OFF_TOPIC_SYSTEM_PROMPT},
-                {"role": "user", "content": f"CITIZEN MESSAGE: {query}"},
-            ],
-            max_tokens=150,
-            temperature=0.3,
-            timeout=min(config.GROQ_TIMEOUT_SECONDS, 6),
-        )
-        answer = (resp.choices[0].message.content or "").strip()
-        if answer:
-            return answer
-    except Exception:
-        pass
-    return (
-        "I can only assist with official PUP Caloocan campus services (such as enrollment, "
-        "student IDs, medical certificates, or academic requests). Please let me know if you "
-        "have a question about a campus service!"
-    )
+        if client is not None:
+            model_name = config.GROQ_MODEL
+            if "/" in model_name or "compound" in model_name or not model_name:
+                model_name = "llama-3.1-8b-instant"
+
+            resp = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": OFF_TOPIC_SYSTEM_PROMPT},
+                    {"role": "user", "content": f"CITIZEN MESSAGE: {query}"},
+                ],
+                max_tokens=150,
+                temperature=0.3,
+                timeout=min(config.GROQ_TIMEOUT_SECONDS, 6),
+            )
+            answer = (resp.choices[0].message.content or "").strip()
+            if answer:
+                return answer
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[llm_service] off-topic generation error: {e}")
+
+    from services.mock_llm_service import generate_off_topic_response as fallback_off_topic
+    return fallback_off_topic(query)
 
 
 def generate_answer(query: str, context_services: List[dict]) -> str:
     """Generate a grounded plain-language answer via Groq, with resilient fallback."""
     try:
         client = _get_client()
-        model_name = config.GROQ_MODEL
-        if "/" in model_name or "compound" in model_name or not model_name:
-            model_name = "llama-3.1-8b-instant"
+        if client is not None:
+            model_name = config.GROQ_MODEL
+            if "/" in model_name or "compound" in model_name or not model_name:
+                model_name = "llama-3.1-8b-instant"
 
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_prompt(query, context_services)},
-        ]
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": build_user_prompt(query, context_services)},
+            ]
 
-        resp = client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            max_tokens=config.GROQ_MAX_TOKENS,
-            temperature=0.1,
-            timeout=config.GROQ_TIMEOUT_SECONDS,
-        )
-        content = (resp.choices[0].message.content or "").strip()
-        if content:
-            return content
+            resp = client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                max_tokens=config.GROQ_MAX_TOKENS,
+                temperature=0.1,
+                timeout=config.GROQ_TIMEOUT_SECONDS,
+            )
+            content = (resp.choices[0].message.content or "").strip()
+            if content:
+                return content
     except Exception as e:
         import logging
         logging.getLogger(__name__).warning(f"[llm_service] Groq inference error: {e}, falling back to charter generator")
-        from services.mock_llm_service import generate_answer as fallback_gen
-        return fallback_gen(query, context_services)
+
+    from services.mock_llm_service import generate_answer as fallback_gen
+    return fallback_gen(query, context_services)
 
 
 def rewrite_and_classify(query: str, history: List[dict]) -> dict:
@@ -97,32 +109,35 @@ def rewrite_and_classify(query: str, history: List[dict]) -> dict:
     hiccup in this step never blocks the rest of the pipeline.
     """
     fallback = {"standalone_query": query, "intent": "service_question"}
-    if not history:
-        pass
-
-    from groq import APIConnectionError, APITimeoutError, RateLimitError
 
     try:
         client = _get_client()
-        resp = client.chat.completions.create(
-            model=config.GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": REWRITE_SYSTEM_PROMPT},
-                {"role": "user", "content": build_rewrite_prompt(query, history)},
-            ],
-            max_tokens=200,
-            temperature=0.0,
-            timeout=min(config.GROQ_TIMEOUT_SECONDS, 6),
-            response_format={"type": "json_object"},
-        )
-        raw = resp.choices[0].message.content or ""
-        parsed = json.loads(raw)
-        standalone_query = (parsed.get("standalone_query") or query).strip() or query
-        intent = parsed.get("intent") if parsed.get("intent") in (
-            "service_question", "off_topic"
-        ) else "service_question"
-        return {"standalone_query": standalone_query, "intent": intent}
-    except (RateLimitError, APIConnectionError, APITimeoutError, TimeoutError):
+        if client is not None:
+            model_name = config.GROQ_MODEL
+            if "/" in model_name or "compound" in model_name or not model_name:
+                model_name = "llama-3.1-8b-instant"
+
+            resp = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": REWRITE_SYSTEM_PROMPT},
+                    {"role": "user", "content": build_rewrite_prompt(query, history)},
+                ],
+                max_tokens=200,
+                temperature=0.0,
+                timeout=min(config.GROQ_TIMEOUT_SECONDS, 6),
+                response_format={"type": "json_object"},
+            )
+            raw = resp.choices[0].message.content or ""
+            parsed = json.loads(raw)
+            standalone_query = (parsed.get("standalone_query") or query).strip() or query
+            intent = parsed.get("intent") if parsed.get("intent") in (
+                "service_question", "off_topic"
+            ) else "service_question"
+            return {"standalone_query": standalone_query, "intent": intent}
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[llm_service] rewrite_and_classify error: {e}")
         return fallback
-    except (json.JSONDecodeError, KeyError, AttributeError, TypeError, ValueError):
-        return fallback
+
+    return fallback
