@@ -1,0 +1,332 @@
+[
+  {
+    "id": "78d7a927-c78a-5f1b-afd0-a93bfcff5b81",
+    "name": "Processing of Application for Change of Enrollment — Adding of Subject",
+    "office": "Academic",
+    "classification": "Simple",
+    "sla_target_value": 18,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Accept, evaluate, and sign the ACE Form (Adding of Subjects)",
+      "Tag the subject(s) indicated in the ACE Form",
+      "Accept payment and issue official receipt (for students not covered by R.A. 10931)",
+      "Accept the fully accomplished ACE Form",
+      "Submit ACE Form to Registrar's Office"
+    ],
+    "required_documents": [
+      "Accomplished ACE Form (Adding of Subject)"
+    ],
+    "expected_output": "Enrolled additional subject/s tagged in SIS"
+  },
+  {
+    "id": "6b04a3cc-8ad9-55df-aa37-b10bf3e34a76",
+    "name": "Processing of Application for Cross-Enrollment",
+    "office": "Academic",
+    "classification": "Simple",
+    "sla_target_value": 10,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Evaluate letter provided by the student",
+      "Approve or deny request for cross-enrollment",
+      "If approved, recommend cross-enrollment and advise student to proceed to the Registrar's Office",
+      "Approve cross-enrollment",
+      "Issue permit to cross-enroll",
+      "Advise student to process the permit to the university where student intends to cross-enroll"
+    ],
+    "required_documents": [
+      "Application Letter for Cross-Enrollment",
+      "Permit to Cross-Enroll"
+    ],
+    "expected_output": "Permit to cross-enroll issued to the student"
+  },
+  {
+    "id": "9823ab7a-6d51-599e-be9a-42abcb8cf8f3",
+    "name": "Processing of Manual Enrollment",
+    "office": "Academic",
+    "classification": "Complex",
+    "sla_target_value": 1350,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Accept and sign the R0 form (Faculty member assigned to the subject)",
+      "Accept, evaluate, and sign the R0 form (Director/Head of Academic Program)",
+      "Tag the subject(s) indicated in the R0 Form",
+      "Accept payment and issue official receipt (Cashier's Office)"
+    ],
+    "required_documents": [
+      "Manual Enrollment Form (R0)"
+    ],
+    "expected_output": "Student manually enrolled and subjects tagged in SIS"
+  },
+  {
+    "id": "c730eb3f-76b1-50d1-9a8f-785c694619a9",
+    "name": "Processing of Application for Overload of Subjects",
+    "office": "Academic",
+    "classification": "Simple",
+    "sla_target_value": 7,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Check requirements presented",
+      "Verify correctness of documents by checking the SIS grade file of the student",
+      "Recommend the request for approval of the Director",
+      "Approve or deny the request (Campus Director)",
+      "Add corresponding units in the student account through SIS Academic Management System",
+      "Advise student to proceed to Application for Change of Enrollment Process (Adding of Subject/s)"
+    ],
+    "required_documents": [
+      "Request Letter for Overload",
+      "SIS Generated Curriculum Profile",
+      "Request for Overload Form",
+      "Fully-accomplished ACE Form",
+      "Certificate of Registration (current semester)"
+    ],
+    "expected_output": "Overload units added to student SIS account; student proceeds to ACE process"
+  },
+  {
+    "id": "7bf2765d-246a-574a-8d3b-a84fae67f733",
+    "name": "Processing of Application for Correction of Grade Entry, Late Reporting of Grades and Removal of Incomplete Mark",
+    "office": "Academic",
+    "classification": "Complex",
+    "sla_target_value": 1358,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Accept payment and issue an official receipt",
+      "Evaluate the requirements; compute and give grade to the student",
+      "Receive the accomplished completion form, class record, and student requirements with notarized affidavit",
+      "Sign the Completion Form",
+      "Log and forward all requirements to the Registrar's Office",
+      "Sign the Completion Form and tag the accomplished grade to SIS",
+      "Return one (1) copy of the completion form to the student"
+    ],
+    "required_documents": [
+      "Completion Form (3 copies)",
+      "Copy of Class Record (3 copies)",
+      "Notarized Affidavit for Change of Grade"
+    ],
+    "expected_output": "Corrected or completed grade tagged in SIS; student receives copy of completion form"
+  },
+  {
+    "id": "16a5cca8-442c-52af-9f35-5d77e530c864",
+    "name": "Application for New Identification Card",
+    "office": "OSAS",
+    "classification": "Simple",
+    "sla_target_value": 2903,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Submit filled-out application form for new ID to the Office of Student Affairs and Services",
+      "Seek approval of the request by the OSS Director",
+      "Pay the corresponding fee at the Cashier's Office",
+      "Proceed to OSS for processing and issuance of printed ID",
+      "Sign in the OSS logbook"
+    ],
+    "required_documents": [
+      "Current Registration Card",
+      "Form PUP-NRID-5-OFSS-007",
+      "Proof of Payment"
+    ],
+    "expected_output": "Printed Identification Card issued to the student"
+  },
+  {
+    "id": "719650d6-3667-56b2-b6b9-1abfe63249be",
+    "name": "Application for Replacement of Lost Identification Card",
+    "office": "OSAS",
+    "classification": "Simple",
+    "sla_target_value": 2903,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Submit filled-out replacement ID form to the Office of Student Affairs and Services",
+      "Pay corresponding fee at the Cashier's Office",
+      "Present official receipt for processing and issuance of replacement ID",
+      "Sign in the OSS logbook"
+    ],
+    "required_documents": [
+      "Notarized Affidavit of Loss",
+      "Form PUP-NRID-5-OFSS-007",
+      "Proof of Payment"
+    ],
+    "expected_output": "Replacement Identification Card issued to the student"
+  },
+  {
+    "id": "e45bcc44-32a0-5a6b-8c1d-3a1a3650e61c",
+    "name": "Consultation Service",
+    "office": "OSAS",
+    "classification": "Simple",
+    "sla_target_value": 28,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Proceed to front desk and present required documents",
+      "Sign in the client logbook",
+      "Accomplish Appointment Slip; assigned to counselor",
+      "Undergo background verification with counselor",
+      "Collect information for the topic or area to be consulted",
+      "Secure appointment slip for follow-up session if needed"
+    ],
+    "required_documents": [
+      "Identification Card or Registration Certificate",
+      "Letter of Request noted by Faculty/Chair/Dean",
+      "Appointment Slip"
+    ],
+    "expected_output": "Consultation conducted; follow-up appointment provided if necessary"
+  },
+  {
+    "id": "645b160f-4995-5a4c-96a5-98f46983e189",
+    "name": "Counseling Service",
+    "office": "OSAS",
+    "classification": "Simple",
+    "sla_target_value": 44,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Proceed to front desk and present required documents to schedule a counseling session",
+      "Sign in the client logbook",
+      "Accomplish the Personal Data Sheet",
+      "Undergo initial assessment: interview, gather information, discuss counseling procedures",
+      "Secure appointment slip for additional sessions if needed"
+    ],
+    "required_documents": [
+      "Identification Card or Registration Certificate",
+      "Referral Slip",
+      "Call Slip",
+      "Appointment Slip",
+      "Personal Data Sheet"
+    ],
+    "expected_output": "Counseling session conducted; follow-up session scheduled if required"
+  },
+  {
+    "id": "e662cf01-ec6b-52c8-896f-36fe13105649",
+    "name": "Issuance of Recommendation Letter",
+    "office": "OSAS",
+    "classification": "Simple",
+    "sla_target_value": 50,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Present required documents; receive logbook and sign in",
+      "Accomplish Exit Interview Form",
+      "Undergo background verification",
+      "Issuance of the Recommendation Letter"
+    ],
+    "required_documents": [
+      "Identification Card or Registration Certificate",
+      "Photocopy of Grades",
+      "Duly Accomplished Exit Interview Form"
+    ],
+    "expected_output": "Recommendation Letter issued to transferring or graduating student"
+  },
+  {
+    "id": "4d5c5004-d3bc-55a2-9ec0-27654456ec29",
+    "name": "Consultation and Treatment Services for Emergency Dental Cases of Students — With Referral",
+    "office": "Administrative",
+    "classification": "Simple",
+    "sla_target_value": 16,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Go to the receiving area and state the reason for consultation or chief complaint",
+      "Dentist takes patient's vital signs",
+      "Dentist assesses and evaluates condition by oral examination and medical history",
+      "Dentist provides immediate treatment/intervention",
+      "With referral: Refer to the medical section and explain the reason for referral",
+      "With referral: Prepare referral form to a nearby hospital and arrange emergency transport",
+      "Proceed to the receiving area and receive initial dose of medicine if available",
+      "Fill out and sign in the Daily Treatment Record (DTR)"
+    ],
+    "required_documents": [
+      "No Requirements Needed"
+    ],
+    "expected_output": "Emergency dental treatment provided; referral form issued to nearby hospital if needed"
+  },
+  {
+    "id": "570ae6ef-d5f2-55a2-ac4e-db38866f5994",
+    "name": "Consultation and Treatment Services for Non-Emergency Dental Cases of Students and Dependents — For New Patients",
+    "office": "Administrative",
+    "classification": "Simple",
+    "sla_target_value": 31,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Go to the receiving area and state the reason for consultation or chief complaint",
+      "Dentist takes patient's vital signs",
+      "Dentist instructs patient to proceed to the treatment area",
+      "Provide necessary information and submit to oral examination",
+      "Dentist takes medical history and performs oral examination",
+      "Dentist provides treatment",
+      "Listen to home instructions and date of follow-up",
+      "Dentist discharges instructions and schedules follow-up",
+      "Proceed to receiving area and receive prescription or referral slip",
+      "Fill out and sign the Daily Treatment Record"
+    ],
+    "required_documents": [
+      "No Requirements Needed"
+    ],
+    "expected_output": "Non-emergency dental treatment provided; prescription and follow-up date issued"
+  },
+  {
+    "id": "9f5a4f22-13b1-53db-b21e-ec93e0588cd7",
+    "name": "Consultation and Treatment Services for Emergency Medical Cases of Students — With Referral",
+    "office": "Administrative",
+    "classification": "Simple",
+    "sla_target_value": 22,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Go to the receiving area and state the reason for consultation or chief complaint",
+      "Physician takes patient's vital signs (BP, Temperature, Respiratory Rate, Pulse Rate)",
+      "Physician assesses and evaluates the condition by medical history and physical examination",
+      "Physician provides immediate treatment/intervention",
+      "With referral: Explain the reason for referral and prepare referral form",
+      "With referral: Prepare emergency transport vehicle for patient conduction",
+      "Proceed to the receiving area and receive initial dose of medicine if available",
+      "Fill out and sign in the Daily Treatment Record (DTR)"
+    ],
+    "required_documents": [
+      "No Requirements Needed"
+    ],
+    "expected_output": "Emergency medical treatment provided; referral form issued to nearest hospital if needed"
+  },
+  {
+    "id": "04017ba8-ae9b-54f9-9be9-30a88690e876",
+    "name": "Consultation and Treatment Services for Non-Emergency Medical Cases of Students and Dependents — For New Patients",
+    "office": "Administrative",
+    "classification": "Simple",
+    "sla_target_value": 30,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Go to the receiving area and state the reason for consultation or chief complaint",
+      "Physician takes the patient's vital signs (BP, Temperature, Respiratory Rate, Pulse Rate)",
+      "Physician instructs patient to proceed to consultation area",
+      "Provide necessary information and submit to physical examination",
+      "Physician takes medical history and performs physical examination",
+      "Physician provides treatment",
+      "Listen to discharge instructions and date of follow-up",
+      "Physician provides discharge instructions and referral slip if necessary",
+      "Proceed to receiving area and receive prescription or referral slip",
+      "Fill out and sign the Daily Treatment Record"
+    ],
+    "required_documents": [
+      "No Requirements Needed"
+    ],
+    "expected_output": "Non-emergency medical treatment provided; prescription and follow-up date issued"
+  },
+  {
+    "id": "25dacb9d-8f2e-513b-883a-82aeb3500626",
+    "name": "Issuance of Follow-up of Students Referred During Enrollment",
+    "office": "Administrative",
+    "classification": "Simple",
+    "sla_target_value": 27,
+    "sla_target_unit": "Minutes",
+    "processing_steps": [
+      "Go to the receiving area of the medical clinic and state the purpose of consultation or follow-up",
+      "Physician retrieves patient record and asks for follow-up purpose",
+      "Present laboratory results or other required documents",
+      "Physician checks results and takes vital signs including weight for PTB cases",
+      "Physician assists student to the consultation area",
+      "Proceed to the consultation area; submit laboratory results and fill out waiver form",
+      "Physician assesses and evaluates documents submitted",
+      "Physician takes medical history and performs medical examination",
+      "Listen to home instructions",
+      "Physician provides discharge instructions",
+      "Proceed to the receiving area and sign the Registration Form"
+    ],
+    "required_documents": [
+      "Laboratory results requested by the Physician (Original Copy)",
+      "Medical certificate from specialist (Original Copy)",
+      "Other documents as deemed necessary"
+    ],
+    "expected_output": "Follow-up consultation completed; medical record updated; further referral or treatment provided if needed"
+  }
+]

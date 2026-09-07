@@ -1,0 +1,109 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg15
+    container_name: icsa-pgvector
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"   # 5433 host-side conflicts with local native PostgreSQL service — using 5434 instead
+    volumes:
+      - ./docker/pgvector/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: icsa-clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: icsa123
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    volumes:
+      - ./docker/clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - default
+  icsa-api:
+    build: ./icsa-api
+    image: icsa-api:latest
+    container_name: icsa-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./icsa-api:/app
+    env_file: .env
+    environment:
+      PGVECTOR_URL: postgresql://postgres:postgres@pgvector:5432/postgres
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PASSWORD: icsa123
+      PSS_DB_URL: postgresql://readonly_icsa:password@pss-postgres-catalogue:5432/service-catalogue-db
+    depends_on:
+      pgvector:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+      - pss-network
+
+  # ── DE-07: Nightly re-index cron sidecar ──────────────────────────
+  # Runs scripts/cron/reindex.py at 2:00 AM daily to keep the pgvector
+  # knowledge base in sync with the live PSS service catalogue.
+  # Uses the same image as icsa-api (all Python deps already baked in).
+  icsa-reindex-cron:
+    build: ./icsa-api
+    image: icsa-api:latest
+    container_name: icsa-reindex-cron
+    env_file: .env
+    environment:
+      PGVECTOR_URL: postgresql://postgres:postgres@pgvector:5432/postgres
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PASSWORD: icsa123
+      PSS_DB_URL: postgresql://readonly_icsa:password@pss-postgres-catalogue:5432/service-catalogue-db
+    volumes:
+      - ./logs:/logs          # reindex.py writes structured log entries here
+      - ./data:/data          # extract_services.py writes extracted_services.json here
+    command: >
+      sh -c "
+        printenv > /etc/environment &&
+        mkdir -p /logs /data &&
+        echo '0 2 * * * . /etc/environment; cd /app && /usr/local/bin/python scripts/cron/reindex.py >> /logs/reindex.log 2>&1' | crontab - &&
+        cron -f
+      "
+    depends_on:
+      icsa-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - default
+      - pss-network
+networks:
+  default:
+  pss-network:
+    external: true
+    name: planning-standards-system_pss-network
+volumes:
+  pgvector_data:
+  clickhouse_data:

@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sentence-transformers
+psycopg2-binary
+clickhouse-driver
+groq
+python-dotenv
+pydantic-settings
+pytest
+httpx
+requests

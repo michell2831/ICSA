@@ -1,0 +1,12 @@
+[
+  {"query": "How do I add a subject after enrollment?", "expected_keywords": ["ACE Form", "adding", "subject"]},
+  {"query": "What do I need to cross-enroll in another university?", "expected_keywords": ["cross-enroll", "permit", "letter"]},
+  {"query": "How can I enroll manually?", "expected_keywords": ["enrollment", "manual", "registrar"]},
+  {"query": "Can I take extra units beyond the maximum load?", "expected_keywords": ["overload", "subject", "approval"]},
+  {"query": "My grade was entered incorrectly, how do I fix it?", "expected_keywords": ["correction", "grade", "faculty"]},
+  {"query": "How do I get a new student ID card?", "expected_keywords": ["identification", "ID", "form"]},
+  {"query": "I lost my ID, how do I get a replacement?", "expected_keywords": ["replacement", "lost", "affidavit"]},
+  {"query": "I need a sick note from the clinic", "expected_keywords": ["medical", "consultation", "certificate"]},
+  {"query": "Paano ako makakakuha ng recommendation letter mula sa OSAS?", "expected_keywords": ["recommendation", "letter", "OSAS"]},
+  {"query": "Ano ang kailangan para sa counseling appointment?", "expected_keywords": ["counseling", "appointment", "student"]}
+]

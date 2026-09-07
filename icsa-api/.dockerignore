@@ -1,0 +1,37 @@
+# Python virtual environment - the biggest offender (~hundreds of MB)
+venv/
+.venv/
+env/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment files (injected at runtime via env_file in docker-compose)
+.env
+.env.*
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db

@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+# Node
+node_modules/
+dist/
+# Env — NEVER commit real credentials
+.env
+icsa-frontend/.env
+# Runtime data & logs (keep .gitkeep only)
+data/*.json
+logs/*.log
+# OS/IDE
+.DS_Store
+.vscode/
+*.tsbuildinfo
+.vs/
