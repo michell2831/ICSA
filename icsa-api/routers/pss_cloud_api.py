@@ -337,6 +337,15 @@ def update_service(svc_id: str, payload: Dict[str, Any] = Body(...)):
     raise HTTPException(status_code=404, detail="Service not found")
 
 
+@router.delete("/service-modes/{mode_id}")
+@router.delete("/api/service-modes/{mode_id}")
+def delete_service_mode(mode_id: str):
+    data = _load_data()
+    data["service_modes"] = [m for m in data.get("service_modes", []) if m["id"] != mode_id]
+    _save_data(data)
+    return {"success": True}
+
+
 @router.patch("/services/{svc_id}/archive")
 @router.patch("/api/services/{svc_id}/archive")
 def archive_service(svc_id: str):
@@ -345,6 +354,7 @@ def archive_service(svc_id: str):
         if s["id"] == svc_id:
             s["archived"] = True
             s["status"] = "INACTIVE"
+            s["is_active"] = False
             _save_data(data)
             return s
     raise HTTPException(status_code=404, detail="Service not found")
@@ -358,9 +368,92 @@ def activate_service(svc_id: str):
         if s["id"] == svc_id:
             s["status"] = "ACTIVE"
             s["is_active"] = True
+            s["archived"] = False
             _save_data(data)
             return s
     raise HTTPException(status_code=404, detail="Service not found")
+
+
+@router.patch("/services/{svc_id}/deactivate")
+@router.patch("/api/services/{svc_id}/deactivate")
+def deactivate_service(svc_id: str):
+    data = _load_data()
+    for s in data["services"]:
+        if s["id"] == svc_id:
+            s["status"] = "INACTIVE"
+            s["is_active"] = False
+            _save_data(data)
+            return s
+    raise HTTPException(status_code=404, detail="Service not found")
+
+
+@router.delete("/services/{svc_id}")
+@router.delete("/api/services/{svc_id}")
+def delete_service(svc_id: str):
+    data = _load_data()
+    data["services"] = [s for s in data.get("services", []) if s["id"] != svc_id]
+    _save_data(data)
+    return {"success": True}
+
+
+@router.get("/services/{svc_id}/intake-fields")
+@router.get("/api/services/{svc_id}/intake-fields")
+def get_intake_fields(svc_id: str):
+    data = _load_data()
+    for s in data.get("services", []):
+        if s["id"] == svc_id:
+            return s.get("intake_fields", [])
+    return []
+
+
+@router.post("/services/{svc_id}/intake-fields")
+@router.post("/api/services/{svc_id}/intake-fields")
+def create_intake_field(svc_id: str, payload: Dict[str, Any] = Body(...)):
+    data = _load_data()
+    for s in data.get("services", []):
+        if s["id"] == svc_id:
+            fields = s.setdefault("intake_fields", [])
+            new_f = {"id": f"fld-{uuid.uuid4().hex[:8]}", **payload}
+            fields.append(new_f)
+            _save_data(data)
+            return new_f
+    raise HTTPException(status_code=404, detail="Service not found")
+
+
+@router.get("/services/{svc_id}/na-flags")
+@router.get("/api/services/{svc_id}/na-flags")
+def get_na_flags(svc_id: str):
+    data = _load_data()
+    for s in data.get("services", []):
+        if s["id"] == svc_id:
+            return s.get("na_flags", [])
+    return []
+
+
+@router.post("/services/{svc_id}/na-flags")
+@router.post("/api/services/{svc_id}/na-flags")
+def create_na_flag(svc_id: str, payload: Dict[str, Any] = Body(...)):
+    data = _load_data()
+    for s in data.get("services", []):
+        if s["id"] == svc_id:
+            flags = s.setdefault("na_flags", [])
+            new_flag = {"id": f"flag-{uuid.uuid4().hex[:8]}", **payload}
+            flags.append(new_flag)
+            _save_data(data)
+            return new_flag
+    raise HTTPException(status_code=404, detail="Service not found")
+
+
+@router.delete("/services/{svc_id}/na-flags/{flag_id}")
+@router.delete("/api/services/{svc_id}/na-flags/{flag_id}")
+def delete_na_flag(svc_id: str, flag_id: str):
+    data = _load_data()
+    for s in data.get("services", []):
+        if s["id"] == svc_id:
+            s["na_flags"] = [f for f in s.get("na_flags", []) if f.get("id") != flag_id]
+            _save_data(data)
+            return {"success": True}
+    return {"success": True}
 
 
 # --- KPIS ENDPOINTS ---
