@@ -1,16 +1,27 @@
 """PSS Cloud Backend API — Real-time persistent state for PSS Dashboard, Service Modes, KPIs, Holidays, Periods, and Commitments."""
+import asyncio
 import json
 import os
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Request, Query, Body, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 router = APIRouter()
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "pss_cloud_store.json")
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+
+# Active SSE subscriber queues for instant sub-second multi-device synchronization
+_sync_subscribers: List[asyncio.Queue] = []
+
+def _notify_sync_subscribers(version: int):
+    for q in list(_sync_subscribers):
+        try:
+            q.put_nowait(version)
+        except Exception:
+            pass
 
 # Default Seed State
 INITIAL_STATE = {
@@ -158,10 +169,12 @@ def _load_data() -> dict:
 
 def _save_data(data: dict) -> None:
     try:
-        data["version"] = data.get("version", 1) + 1
+        new_version = data.get("version", 1) + 1
+        data["version"] = new_version
         data["last_updated"] = datetime.utcnow().isoformat() + "Z"
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
+        _notify_sync_subscribers(new_version)
     except Exception as e:
         print(f"[PSS Store] Failed to save data: {e}")
 
@@ -174,6 +187,39 @@ def get_sync_version():
         "version": data.get("version", 1),
         "last_updated": data.get("last_updated", "")
     }
+
+
+@router.get("/sync/stream")
+@router.get("/api/sync/stream")
+async def get_sync_stream(request: Request):
+    q = asyncio.Queue()
+    _sync_subscribers.append(q)
+
+    async def event_generator():
+        try:
+            data = _load_data()
+            yield f"data: {json.dumps({'version': data.get('version', 1)})}\n\n"
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    version = await asyncio.wait_for(q.get(), timeout=15.0)
+                    yield f"data: {json.dumps({'version': version})}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+        finally:
+            if q in _sync_subscribers:
+                _sync_subscribers.remove(q)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
 
 
 # --- SERVICE MODES ENDPOINTS ---
