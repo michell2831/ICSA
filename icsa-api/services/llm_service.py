@@ -42,9 +42,7 @@ def generate_off_topic_response(query: str) -> str:
     try:
         client = _get_client()
         if client is not None:
-            model_name = config.GROQ_MODEL
-            if "/" in model_name or "compound" in model_name or not model_name:
-                model_name = "llama-3.1-8b-instant"
+            model_name = config.GROQ_MODEL or "groq/compound-mini"
 
             resp = client.chat.completions.create(
                 model=model_name,
@@ -72,9 +70,7 @@ def generate_answer(query: str, context_services: List[dict]) -> str:
     try:
         client = _get_client()
         if client is not None:
-            model_name = config.GROQ_MODEL
-            if "/" in model_name or "compound" in model_name or not model_name:
-                model_name = "llama-3.1-8b-instant"
+            model_name = config.GROQ_MODEL or "groq/compound-mini"
 
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -113,9 +109,7 @@ def rewrite_and_classify(query: str, history: List[dict]) -> dict:
     try:
         client = _get_client()
         if client is not None:
-            model_name = config.GROQ_MODEL
-            if "/" in model_name or "compound" in model_name or not model_name:
-                model_name = "llama-3.1-8b-instant"
+            model_name = config.GROQ_MODEL or "groq/compound-mini"
 
             resp = client.chat.completions.create(
                 model=model_name,

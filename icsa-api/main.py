@@ -66,13 +66,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: read allowed origins from env (comma-separated), default to local dev only
-_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
-ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
-
+# CORS: allow all origins so Vercel frontend, local dev, and preview deployments connect cleanly
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
