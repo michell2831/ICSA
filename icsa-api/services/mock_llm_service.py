@@ -50,8 +50,8 @@ def generate_answer(query: str, context_services: List[dict]) -> str:
     office = top.get("office", "the concerned office")
     sla = f"{top.get('sla_target_value', '')} {top.get('sla_target_unit', '')}".strip()
     return (
-        f"[MOCK ANSWER] Based on available information, the service that matches "
-        f"your question is \"{name}\" handled by the {office} office. "
-        f"Processing time (SLA): {sla or 'see office posting'}. "
-        f"Please prepare the listed requirements before visiting."
+        f"Based on PUP Caloocan Citizen's Charter, the service that matches "
+        f"your question is **\"{name}\"** handled by the **{office}** office.\n\n"
+        f"• **Processing Time (SLA):** {sla or 'Standard processing'}\n"
+        f"• **Instructions:** Please prepare the required documents and proceed to {office} during campus working hours (Mon-Fri, 8:00 AM - 5:00 PM)."
     )
