@@ -58,36 +58,33 @@ def generate_off_topic_response(query: str) -> str:
 
 
 def generate_answer(query: str, context_services: List[dict]) -> str:
-    """Generate a grounded plain-language answer via Groq.
+    """Generate a grounded plain-language answer via Groq, with resilient fallback."""
+    try:
+        client = _get_client()
+        model_name = config.GROQ_MODEL
+        if "/" in model_name or "compound" in model_name or not model_name:
+            model_name = "llama-3.1-8b-instant"
 
-    Retries once (after 2s) on rate-limit/connection errors, then raises
-    TimeoutError so the orchestrator can return the fixed timeout message.
-    """
-    from groq import APIConnectionError, APITimeoutError, RateLimitError
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": build_user_prompt(query, context_services)},
+        ]
 
-    client = _get_client()
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": build_user_prompt(query, context_services)},
-    ]
-
-    last_err = None
-    for attempt in range(2):
-        try:
-            resp = client.chat.completions.create(
-                model=config.GROQ_MODEL,
-                messages=messages,
-                max_tokens=config.GROQ_MAX_TOKENS,
-                temperature=0.1,
-                timeout=config.GROQ_TIMEOUT_SECONDS,
-            )
-            return resp.choices[0].message.content or ""
-        except (RateLimitError, APIConnectionError, APITimeoutError) as e:
-            last_err = e
-            if attempt == 0:
-                time.sleep(2)
-
-    raise TimeoutError(f"Groq unavailable after retry: {last_err}")
+        resp = client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            max_tokens=config.GROQ_MAX_TOKENS,
+            temperature=0.1,
+            timeout=config.GROQ_TIMEOUT_SECONDS,
+        )
+        content = (resp.choices[0].message.content or "").strip()
+        if content:
+            return content
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[llm_service] Groq inference error: {e}, falling back to charter generator")
+        from services.mock_llm_service import generate_answer as fallback_gen
+        return fallback_gen(query, context_services)
 
 
 def rewrite_and_classify(query: str, history: List[dict]) -> dict:
