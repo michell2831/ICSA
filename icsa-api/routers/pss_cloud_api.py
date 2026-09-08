@@ -884,3 +884,111 @@ def get_offices():
         {"id": "osas", "name": "Student Affairs Office", "code": "OSAS"},
         {"id": "admin", "name": "Administrative Office", "code": "ADMIN"},
     ]
+
+
+# --- SERVICE UTILIZATION & SLA LOGS ---
+@router.get("/service-utilization")
+@router.get("/api/service-utilization")
+def get_service_utilization():
+    data = _load_data()
+    return data.get("service_utilization", [
+        {
+            "id": "su-1",
+            "service_id": "svc-1",
+            "service_name": "Issuance of Transcript of Records (TOR)",
+            "transactions_count": 48,
+            "period": "1st Semester A.Y. 2025-2026",
+            "sla_met_count": 46,
+            "sla_breached_count": 2,
+        },
+        {
+            "id": "su-2",
+            "service_id": "svc-2",
+            "service_name": "Application for Graduation & Academic Evaluation",
+            "transactions_count": 32,
+            "period": "1st Semester A.Y. 2025-2026",
+            "sla_met_count": 31,
+            "sla_breached_count": 1,
+        }
+    ])
+
+
+@router.post("/service-utilization")
+@router.post("/api/service-utilization")
+def create_service_utilization(payload: Dict[str, Any] = Body(...)):
+    data = _load_data()
+    if "service_utilization" not in data:
+        data["service_utilization"] = []
+    item = {
+        "id": f"su-{uuid.uuid4().hex[:8]}",
+        **payload,
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+    data["service_utilization"].append(item)
+    _save_data(data)
+    return item
+
+
+@router.get("/sla-computation-logs")
+@router.get("/api/sla-computation-logs")
+def get_sla_computation_logs(
+    service_id: Optional[str] = Query(None),
+    transaction_id: Optional[str] = Query(None),
+    page: int = Query(1),
+    limit: int = Query(50),
+):
+    data = _load_data()
+    logs = data.get("sla_computation_logs", [])
+    if service_id:
+        logs = [l for l in logs if l.get("service_id") == service_id]
+    if transaction_id:
+        logs = [l for l in logs if l.get("transaction_id") == transaction_id]
+    return {"data": logs, "total": len(logs)}
+
+
+@router.get("/sla-rules")
+@router.get("/api/sla-rules")
+def get_sla_rules():
+    data = _load_data()
+    return data.get("sla_rules", [
+        {
+            "id": "sla-rule-1",
+            "name": "Standard Academic SLA Rule",
+            "service_id": "svc-1",
+            "target_days": 3,
+            "is_active": True,
+            "calendar_type": "Working Days (Mon-Fri excl. Holidays)",
+        }
+    ])
+
+
+@router.post("/sla-rules")
+@router.post("/api/sla-rules")
+def create_sla_rule(payload: Dict[str, Any] = Body(...)):
+    data = _load_data()
+    if "sla_rules" not in data:
+        data["sla_rules"] = []
+    rule = {
+        "id": f"sla-rule-{uuid.uuid4().hex[:8]}",
+        **payload,
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+    data["sla_rules"].append(rule)
+    _save_data(data)
+    return rule
+
+
+@router.post("/audit-events")
+@router.post("/api/audit-events")
+def create_audit_event(payload: Dict[str, Any] = Body(...)):
+    data = _load_data()
+    if "audit_events" not in data:
+        data["audit_events"] = []
+    evt = {
+        "id": f"evt-{uuid.uuid4().hex[:8]}",
+        **payload,
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+    data["audit_events"].append(evt)
+    _save_data(data)
+    return evt
