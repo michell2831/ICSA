@@ -274,7 +274,16 @@ def toggle_service_mode(mode_id: str):
             m["is_active"] = not m.get("is_active", True)
             _save_data(data)
             return m
-    raise HTTPException(status_code=404, detail="Service mode not found")
+@router.delete("/service-modes/{mode_id}")
+@router.delete("/api/service-modes/{mode_id}")
+def delete_service_mode(mode_id: str):
+    data = _load_data()
+    original_len = len(data["service_modes"])
+    data["service_modes"] = [m for m in data["service_modes"] if m["id"] != mode_id]
+    if len(data["service_modes"]) == original_len:
+        raise HTTPException(status_code=404, detail="Service mode not found")
+    _save_data(data)
+    return {"message": "Service mode deleted successfully", "id": mode_id}
 
 
 # --- SERVICES (CATALOGUE) ENDPOINTS ---
