@@ -1,5 +1,6 @@
 """PSS Cloud Backend API — Real-time persistent state for PSS Dashboard, Service Modes, KPIs, Holidays, Periods, and Commitments."""
 import asyncio
+import base64
 import json
 import os
 import uuid
@@ -9,6 +10,111 @@ from fastapi import APIRouter, Request, Query, Body, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 
 router = APIRouter()
+
+# ---------------------------------------------------------------------------
+# Recognized ARMS AI User Identities (Pre-registered Pilot Users)
+# ---------------------------------------------------------------------------
+ARMS_RECOGNIZED_USERS = {
+    "juan.delacruz": {
+        "userId": "mock-juan",
+        "username": "juan.delacruz",
+        "displayName": "Juan dela Cruz",
+        "armsRole": "STAFF",
+        "role": "Staff",
+        "office": "ACAD",
+        "isCrossOffice": False,
+        "officeLabel": "Academic Affairs (ACAD)",
+        "roleLabel": "Staff",
+    },
+    "maria.garcia": {
+        "userId": "mock-maria",
+        "username": "maria.garcia",
+        "displayName": "Maria Garcia",
+        "armsRole": "SUBSYSTEM_ADMIN",
+        "role": "Office Head",
+        "office": "ACAD",
+        "isCrossOffice": False,
+        "officeLabel": "Academic Affairs (ACAD)",
+        "roleLabel": "Office Head",
+    },
+    "jose.santos": {
+        "userId": "mock-jose",
+        "username": "jose.santos",
+        "displayName": "Jose Santos",
+        "armsRole": "STAFF",
+        "role": "Staff",
+        "office": "OSAS",
+        "isCrossOffice": False,
+        "officeLabel": "Student Affairs (OSAS)",
+        "roleLabel": "Staff",
+    },
+    "pedro.bautista": {
+        "userId": "mock-pedro",
+        "username": "pedro.bautista",
+        "displayName": "Pedro Bautista",
+        "armsRole": "SUBSYSTEM_ADMIN",
+        "role": "Office Head",
+        "office": "OSAS",
+        "isCrossOffice": False,
+        "officeLabel": "Student Affairs (OSAS)",
+        "roleLabel": "Office Head",
+    },
+    "jillian.reyes": {
+        "userId": "mock-jillian",
+        "username": "jillian.reyes",
+        "displayName": "Jillian Reyes",
+        "armsRole": "STAFF",
+        "role": "Staff",
+        "office": "ADMIN",
+        "isCrossOffice": False,
+        "officeLabel": "Administration (ADMIN)",
+        "roleLabel": "Staff",
+    },
+    "albert.lim": {
+        "userId": "mock-albert",
+        "username": "albert.lim",
+        "displayName": "Albert Lim",
+        "armsRole": "SUBSYSTEM_ADMIN",
+        "role": "Office Head",
+        "office": "ADMIN",
+        "isCrossOffice": False,
+        "officeLabel": "Administration (ADMIN)",
+        "roleLabel": "Office Head",
+    },
+    "ana.reyes": {
+        "userId": "mock-ana",
+        "username": "ana.reyes",
+        "displayName": "Ana Reyes",
+        "armsRole": "CAMPUS_DIRECTOR",
+        "role": "Campus Director",
+        "office": "ALL",
+        "isCrossOffice": True,
+        "officeLabel": "All Offices (Campus-Wide)",
+        "roleLabel": "Campus Director",
+    },
+    "carlo.mendoza": {
+        "userId": "mock-carlo",
+        "username": "carlo.mendoza",
+        "displayName": "Carlo Mendoza",
+        "armsRole": "PLANNING_OFFICER",
+        "role": "Planning Officer",
+        "office": "ALL",
+        "isCrossOffice": True,
+        "officeLabel": "All Offices (Cross-Office)",
+        "roleLabel": "Planning Officer",
+    },
+    "ricardo.santos": {
+        "userId": "mock-superadmin",
+        "username": "ricardo.santos",
+        "displayName": "Ricardo Santos",
+        "armsRole": "SUPER_ADMIN",
+        "role": "Super Admin",
+        "office": "ALL",
+        "isCrossOffice": True,
+        "officeLabel": "All Offices (Cross-Office)",
+        "roleLabel": "Super Admin",
+    },
+}
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "pss_cloud_store.json")
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
@@ -220,6 +326,47 @@ async def get_sync_stream(request: Request):
             "X-Accel-Buffering": "no",
         }
     )
+
+
+# --- ARMS AUTHENTICATION ENDPOINTS ---
+@router.post("/auth/login")
+@router.post("/api/auth/login")
+def auth_login(payload: Dict[str, Any] = Body(...)):
+    raw_username = payload.get("username", "").strip().lower()
+    user_info = ARMS_RECOGNIZED_USERS.get(raw_username)
+    if not user_info:
+        for u in ARMS_RECOGNIZED_USERS.values():
+            if u["displayName"].lower() == raw_username or u["username"].lower() == raw_username:
+                user_info = u
+                break
+
+    if not user_info:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed. User is not recognized by ARMS AI authentication microservice."
+        )
+
+    claims_json = json.dumps({
+        "userId": user_info["userId"],
+        "username": user_info["username"],
+        "displayName": user_info["displayName"],
+        "armsRole": user_info["armsRole"],
+        "office": user_info["office"],
+        "isCrossOffice": user_info["isCrossOffice"],
+    })
+    token = f"mock-token-{base64.b64encode(claims_json.encode('utf-8')).decode('utf-8')}"
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user_info
+    }
+
+
+@router.get("/auth/users")
+@router.get("/api/auth/users")
+def get_auth_users():
+    return {"users": list(ARMS_RECOGNIZED_USERS.values())}
 
 
 # --- SERVICE MODES ENDPOINTS ---
