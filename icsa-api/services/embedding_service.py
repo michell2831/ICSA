@@ -27,6 +27,21 @@ def generate_embedding(text: str) -> List[float]:
 
 
 def generate_embeddings_batch(texts: List[str]) -> List[List[float]]:
-    """Embed many texts in one batch call (much faster than a loop)."""
-    vecs = _get_model().encode(texts, normalize_embeddings=True, batch_size=32)
+    """Embed many texts safely with torch.no_grad and small batch size to stay under 512MB RAM."""
+    try:
+        import torch
+        with torch.no_grad():
+            vecs = _get_model().encode(
+                texts,
+                normalize_embeddings=True,
+                batch_size=8,
+                show_progress_bar=False,
+            )
+    except Exception:
+        vecs = _get_model().encode(
+            texts,
+            normalize_embeddings=True,
+            batch_size=8,
+            show_progress_bar=False,
+        )
     return [[float(x) for x in v] for v in vecs]
