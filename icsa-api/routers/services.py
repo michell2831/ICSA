@@ -66,7 +66,8 @@ def _run_reindex() -> None:
             rec["embedding"] = embeddings[i]
         store_embeddings(records)
         _reindex_state.update(
-            status="done",
+            status="completed",
+            done=True,
             detail=f"Upserted {len(records)} services from PSS into pgvector.",
             finished_at=datetime.datetime.now().isoformat(),
         )
