@@ -112,6 +112,13 @@ app.include_router(services.router, tags=["services"])
 app.include_router(pss_cloud_api.router, tags=["pss_cloud"])
 
 
+@app.get("/", tags=["system"])
+@app.head("/", tags=["system"])
+def root():
+    return {"status": "ok", "version": "1.0.0"}
+
+
 @app.get("/health", tags=["system"])
+@app.head("/health", tags=["system"])
 def health():
     return {"status": "ok", "version": "1.0.0"}
