@@ -66,14 +66,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: allow all origins so Vercel frontend, local dev, and preview deployments connect cleanly
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r".*",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS: allow Vercel frontend, preview domains, and local dev
+raw_allowed = os.getenv("ALLOWED_ORIGINS") or os.getenv("FRONTEND_URL")
+if raw_allowed:
+    allowed_origins = [o.strip() for o in raw_allowed.split(",") if o.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_origin_regex=r"https://.*\.vercel\.app|http://localhost(:\d+)?",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"https://.*\.vercel\.app|http://localhost(:\d+)?",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # AI-06 fix: FastAPI/Pydantic's default 422 response for request-body
