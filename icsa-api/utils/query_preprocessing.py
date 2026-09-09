@@ -29,6 +29,13 @@ TAGLISH_PHRASE_MAP = [
     ("paano mag-apply ng", "how to apply for"),
     ("paano mag file ng", "how to file"),
     ("paano mag-file ng", "how to file"),
+    ("paano process ng", "what is the process for"),
+    ("paano ang process ng", "what is the process for"),
+    ("paano ang proseso ng", "what is the process for"),
+    ("ano ang proseso ng", "what is the process for"),
+    ("ano ang process ng", "what is the process for"),
+    ("proseso ng", "process for"),
+    ("process ng", "process for"),
     ("saan ako kukuha ng", "where do I get"),
     ("ilang araw bago", "how many days before"),
     ("magkano ang", "how much is the"),
@@ -52,6 +59,9 @@ def expand_query(text: str) -> str:
 
     lowered = text.lower()
     expansions: List[str] = []
+
+    if "good moral" in lowered:
+        expansions.append("Request for Certificate of Good Moral Character")
 
     for phrase, english in TAGLISH_PHRASE_MAP:
         if phrase in lowered:

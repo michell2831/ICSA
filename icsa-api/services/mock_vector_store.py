@@ -94,6 +94,24 @@ _MOCK_SERVICES = [
         "sla_target_value": 5,
         "sla_target_unit": "Days",
     },
+    {
+        "service_id": "9fbe082f-980a-4408-a656-47a8227a96d8",
+        "service_name": "Request for Certificate of Good Moral Character",
+        "office": "OSAS",
+        "text_chunk": (
+            "Service: Request for Certificate of Good Moral Character (Issuance of Good Moral Certificate). "
+            "Office: OSAS (Office of Student Services). "
+            "Requirements: Accomplished Request Form, valid PUP Student Identification Card (ID), "
+            "Authorization Letter and valid ID of claimant if representative. "
+            "Steps: Submit accomplished request form to the OSAS receiving area; "
+            "Staff logs request and issues claim stub; "
+            "Process and prepare the Certificate of Good Moral Character; "
+            "Issue Certificate of Good Moral Character; Client signs in logbook. "
+            "Output: Certificate of Good Moral Character issued."
+        ),
+        "sla_target_value": 37,
+        "sla_target_unit": "Minutes",
+    },
 ]
 
 SIMILARITY_THRESHOLD = 0.30
